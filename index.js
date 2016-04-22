@@ -1,5 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var request = require('request');
 
 var app = express();
 app.use(bodyParser.json());
@@ -23,9 +24,27 @@ app.post('/', function(req, res) {
     return res.json({ error: 'wrong-ref' });
   }
 
-  var sha1 = payload.after;
-  console.log(repoName + ': updating "canary" to "' + sha1 + '" ...');
-  return res.json({ status: 'ok' });
+  console.log(repoName + ': updating "canary" to "' + payload.after + '" ...');
+
+  request.patch('https://api.github.com/repos/' + repoName + '/git/refs/heads/canary', {
+    headers: {
+      'User-Agent': 'canary-sync',
+    },
+    json: {
+      sha: payload.after,
+      force: true,
+    },
+    auth: {
+      user: process.env.GH_USER,
+      pass: process.env.GH_TOKEN,
+    },
+  }, function (error, response, body) {
+    if (error && response.statusCode !== 200) {
+      res.json({ error: error || body || response.statusCode });
+    } else {
+      res.json({ status: response.statusCode });
+    }
+  });
 });
 
 app.listen(app.get('port'), function() {
