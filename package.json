@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/Turbo87/canary-sync/issues"
   },
-  "homepage": "https://github.com/Turbo87/canary-sync#readme"
+  "homepage": "https://github.com/Turbo87/canary-sync#readme",
+  "dependencies": {
+    "body-parser": "^1.15.0",
+    "express": "^4.13.4"
+  }
 }
