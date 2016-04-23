@@ -39,9 +39,12 @@ app.post('/', function(req, res) {
       pass: process.env.GH_TOKEN,
     },
   }, function (error, response, body) {
-    if (error && response.statusCode !== 200) {
-      res.json({ error: error || body || response.statusCode });
+    if (error || response.statusCode !== 200) {
+      error = error || body || response.statusCode;
+      console.log(repoName + ': ' + (error.message || error));
+      res.json({ error: error });
     } else {
+      console.log(repoName + ': done');
       res.json({ status: response.statusCode });
     }
   });
