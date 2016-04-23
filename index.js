@@ -1,6 +1,15 @@
 var express = require('express');
 var bodyParser = require('body-parser');
-var request = require('request');
+var request = require('request').defaults({
+  baseUrl: 'https://api.github.com/',
+  headers: {
+    'User-Agent': 'canary-sync',
+  },
+  auth: {
+    user: process.env.GH_USER,
+    pass: process.env.GH_TOKEN,
+  },
+});
 
 var app = express();
 app.use(bodyParser.json());
@@ -26,17 +35,10 @@ app.post('/', function(req, res) {
 
   console.log(repoName + ': updating "canary" to "' + payload.after + '" ...');
 
-  request.patch('https://api.github.com/repos/' + repoName + '/git/refs/heads/canary', {
-    headers: {
-      'User-Agent': 'canary-sync',
-    },
+  request.patch('/repos/' + repoName + '/git/refs/heads/canary', {
     json: {
       sha: payload.after,
       force: true,
-    },
-    auth: {
-      user: process.env.GH_USER,
-      pass: process.env.GH_TOKEN,
     },
   }, function (error, response, body) {
     if (error || response.statusCode !== 200) {
