@@ -33,22 +33,26 @@ app.post('/', function(req, res) {
     return res.json({ error: 'wrong-ref' });
   }
 
-  console.log(repoName + ': updating "canary" to "' + payload.after + '" ...');
+  console.log(repoName + ': reading "master" ...');
+  request.get('/repos/' + repoName + '/git/refs/heads/master', { json: true }, function(error, response, body) {
+    var sha = body.object.sha;
 
-  request.patch('/repos/' + repoName + '/git/refs/heads/canary', {
-    json: {
-      sha: payload.after,
-      force: true,
-    },
-  }, function (error, response, body) {
-    if (error || response.statusCode !== 200) {
-      error = error || body || response.statusCode;
-      console.log(repoName + ': ' + (error.message || error));
-      res.json({ error: error });
-    } else {
-      console.log(repoName + ': done');
-      res.json({ status: response.statusCode });
-    }
+    console.log(repoName + ': updating "canary" to "' + sha + '" ...');
+    request.patch('/repos/' + repoName + '/git/refs/heads/canary', {
+      json: {
+        sha: sha,
+        force: true,
+      },
+    }, function (error, response, body) {
+      if (error || response.statusCode !== 200) {
+        error = error || body || response.statusCode;
+        console.log(repoName + ': ' + (error.message || error));
+        res.json({ error: error });
+      } else {
+        console.log(repoName + ': done');
+        res.json({ status: response.statusCode });
+      }
+    });
   });
 });
 
